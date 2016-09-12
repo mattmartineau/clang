@@ -5128,6 +5128,12 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   Args.AddLastArg(CmdArgs, options::OPT_fdiagnostics_show_template_tree);
   Args.AddLastArg(CmdArgs, options::OPT_fno_elide_type);
 
+  // Enables compilation with the Amdahl auto-parallelism language extension
+  if(Args.hasFlag(
+        options::OPT_famdahl, options::OPT_fnoamdahl, /*Default=*/false)) {
+    CmdArgs.push_back("-famdahl");
+  }
+
   // Forward flags for OpenMP. We don't do this if the current action is an
   // device offloading action.
   //

@@ -2093,6 +2093,9 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
   Opts.OpenMPIsDevice =
       Opts.OpenMP && Args.hasArg(options::OPT_fopenmp_is_device);
 
+  // Check if -famdahl is specified
+  Opts.Amdahl = Args.hasArg(options::OPT_fopenmp);
+
   if (Opts.OpenMP) {
     int Version =
         getLastArgIntValue(Args, OPT_fopenmp_version_EQ, Opts.OpenMP, Diags);
