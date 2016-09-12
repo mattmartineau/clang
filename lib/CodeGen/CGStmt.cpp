@@ -134,7 +134,13 @@ void CodeGenFunction::EmitStmt(const Stmt *S) {
   case Stmt::IfStmtClass:       EmitIfStmt(cast<IfStmt>(*S));             break;
   case Stmt::WhileStmtClass:    EmitWhileStmt(cast<WhileStmt>(*S));       break;
   case Stmt::DoStmtClass:       EmitDoStmt(cast<DoStmt>(*S));             break;
-  case Stmt::ForStmtClass:      EmitForStmt(cast<ForStmt>(*S));           break;
+  case Stmt::ForStmtClass:      {
+                                  if(CGM.getLangOpts().Amdahl)
+                                    EmitAmdahlForStmt(cast<ForStmt>(*S));
+                                  else
+                                    EmitForStmt(cast<ForStmt>(*S));
+                                  break;
+                                }
 
   case Stmt::ReturnStmtClass:   EmitReturnStmt(cast<ReturnStmt>(*S));     break;
 

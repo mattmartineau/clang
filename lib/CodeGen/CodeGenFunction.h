@@ -2542,6 +2542,8 @@ public:
   void EmitOMPPrivateLoopCounters(const OMPLoopDirective &S,
                                   OMPPrivateScope &LoopScope);
 
+  void EmitAmdahlForStmt(const ForStmt &S,
+                   ArrayRef<const Attr *> Attrs = None);
 private:
   /// Helpers for the OpenMP loop directives.
   void EmitOMPLoopBody(const OMPLoopDirective &D, JumpDest LoopExit);
