@@ -659,7 +659,8 @@ def err_object_cannot_be_passed_returned_by_value : Error<
 def err_parameters_retval_cannot_have_fp16_type : Error<
   "%select{parameters|function return value}0 cannot have __fp16 type; did you forget * ?">;
 def err_opencl_half_load_store : Error<
-  "%select{loading directly from|assigning directly to}0 pointer to type %1 is not allowed">;
+  "%select{loading directly from|assigning directly to}0 pointer to type %1 requires "
+  "cl_khr_fp16. Use vector data %select{load|store}0 builtin functions instead">;
 def err_opencl_cast_to_half : Error<"casting to type %0 is not allowed">;
 def err_opencl_half_declaration : Error<
   "declaring variable of type %0 is not allowed">;
@@ -2255,6 +2256,8 @@ def err_attribute_only_once_per_parameter : Error<
   "%0 attribute can only be applied once per parameter">;
 def err_attribute_uuid_malformed_guid : Error<
   "uuid attribute contains a malformed GUID">;
+def err_mismatched_uuid : Error<"uuid does not match previous declaration">;
+def note_previous_uuid : Note<"previous uuid specified here">;
 def warn_attribute_pointers_only : Warning<
   "%0 attribute only applies to%select{| constant}1 pointer arguments">,
   InGroup<IgnoredAttributes>;
@@ -5464,7 +5467,7 @@ def err_typecheck_invalid_lvalue_addrof : Error<
   "cannot take the address of an rvalue of type %0">;
 def ext_typecheck_addrof_temporary : ExtWarn<
   "taking the address of a temporary object of type %0">, 
-  InGroup<DiagGroup<"address-of-temporary">>, DefaultError;
+  InGroup<AddressOfTemporary>, DefaultError;
 def err_typecheck_addrof_temporary : Error<
   "taking the address of a temporary object of type %0">;
 def err_typecheck_addrof_dtor : Error<
@@ -6821,7 +6824,7 @@ def warn_side_effects_typeid : Warning<
   "operand to 'typeid'">, InGroup<PotentiallyEvaluatedExpression>;
 def warn_unused_result : Warning<
   "ignoring return value of function declared with %0 attribute">,
-  InGroup<DiagGroup<"unused-result">>;
+  InGroup<UnusedResult>;
 def warn_unused_volatile : Warning<
   "expression result unused; assign into a variable to force a volatile load">,
   InGroup<DiagGroup<"unused-volatile-lvalue">>;
@@ -7808,7 +7811,7 @@ def err_invalid_protocol_qualifiers : Error<
   "invalid protocol qualifiers on non-ObjC type">;
 def warn_ivar_use_hidden : Warning<
   "local declaration of %0 hides instance variable">,
-   InGroup<DiagGroup<"shadow-ivar">>;
+   InGroup<ShadowIvar>;
 def warn_direct_initialize_call : Warning<
   "explicit call to +initialize results in duplicate call to +initialize">,
    InGroup<ExplicitInitializeCall>;

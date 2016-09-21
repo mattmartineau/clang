@@ -108,8 +108,6 @@ static const char *getSparcAsmModeForCPU(StringRef Name,
   }
 }
 
-/// CheckPreprocessingOptions - Perform some validation of preprocessing
-/// arguments that is shared with gcc.
 static void CheckPreprocessingOptions(const Driver &D, const ArgList &Args) {
   if (Arg *A = Args.getLastArg(options::OPT_C, options::OPT_CC)) {
     if (!Args.hasArg(options::OPT_E) && !Args.hasArg(options::OPT__SLASH_P) &&
@@ -121,8 +119,6 @@ static void CheckPreprocessingOptions(const Driver &D, const ArgList &Args) {
   }
 }
 
-/// CheckCodeGenerationOptions - Perform some validation of code generation
-/// arguments that is shared with gcc.
 static void CheckCodeGenerationOptions(const Driver &D, const ArgList &Args) {
   // In gcc, only ARM checks this, but it seems reasonable to check universally.
   if (Args.hasArg(options::OPT_static))
@@ -4902,6 +4898,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   claimNoWarnArgs(Args);
 
   Args.AddAllArgs(CmdArgs, options::OPT_R_Group);
+
   Args.AddAllArgs(CmdArgs, options::OPT_W_Group);
   if (Args.hasFlag(options::OPT_pedantic, options::OPT_no_pedantic, false))
     CmdArgs.push_back("-pedantic");
@@ -5909,6 +5906,10 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("-fdiagnostics-show-category");
     CmdArgs.push_back(A->getValue());
   }
+
+  if (Args.hasFlag(options::OPT_fdiagnostics_show_hotness,
+                   options::OPT_fno_diagnostics_show_hotness, false))
+    CmdArgs.push_back("-fdiagnostics-show-hotness");
 
   if (const Arg *A = Args.getLastArg(options::OPT_fdiagnostics_format_EQ)) {
     CmdArgs.push_back("-fdiagnostics-format");
