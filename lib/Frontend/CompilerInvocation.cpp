@@ -2102,7 +2102,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
       Opts.OpenMP && Args.hasArg(options::OPT_fopenmp_is_device);
 
   // Check if -famdahl is specified
-  Opts.Amdahl = Args.hasArg(options::OPT_fopenmp);
+  Opts.Amdahl = Args.hasArg(options::OPT_famdahl);
 
   if (Opts.OpenMP) {
     int Version =
