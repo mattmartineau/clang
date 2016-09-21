@@ -18,6 +18,12 @@ using namespace CodeGen;
 
 void CodeGenFunction::EmitAmdahlForStmt(const ForStmt &S,
                                   ArrayRef<const Attr *> ForAttrs) {
+
+  auto AmdahlForBeginBlock = createBasicBlock("amdahl.for.begin");
+  EmitBlock(AmdahlForBeginBlock);
+
+  // Call runtime to initialise amdahl loop
+
   JumpDest LoopExit = getJumpDestInCurrentScope("for.end");
 
   LexicalScope ForScope(*this, S.getSourceRange());
