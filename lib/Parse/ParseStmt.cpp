@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "RAIIObjectsForParser.h"
+#include "clang/Basic/AmdahlKinds.h"
 #include "clang/Basic/Attributes.h"
 #include "clang/Basic/PrettyStackTrace.h"
 #include "clang/Parse/Parser.h"
@@ -1511,7 +1512,21 @@ bool Parser::isForRangeIdentifier() {
 /// [C++0x]   expression
 /// [C++0x]   braced-init-list            [TODO]
 StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
-  assert(Tok.is(tok::kw_for) && "Not a for stmt!");
+
+  // Check if we have been passed one of the extended Amdahl for statements.
+  AmdahlForKind AmdahlForToken = AmdahlForKind::AmdahlForSequential;
+  if(getLangOpts().Amdahl) {
+    if(Tok.is(tok::kw_pfor)) {
+      AmdahlForToken = AmdahlForKind::AmdahlForParallel;
+    }
+    else if (Tok.is(tok::kw_cfor)){
+      AmdahlForToken = AmdahlForKind::AmdahlForCollapse;
+    }
+  }
+
+  assert((Tok.is(tok::kw_for) || 
+       (AmdahlForToken != AmdahlForKind::AmdahlForSequential)) && "Not a for stmt!");
+
   SourceLocation ForLoc = ConsumeToken();  // eat the 'for'.
 
   SourceLocation CoawaitLoc;
@@ -1798,9 +1813,21 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
   if (ForRange)
     return Actions.FinishCXXForRangeStmt(ForRangeStmt.get(), Body.get());
 
+  // Check if we have been passed one of the extended Amdahl for statements.
+  if(getLangOpts().Amdahl) {
+    if(AmdahlForToken == AmdahlForKind::AmdahlForParallel) {
+      return Actions.ActOnAmdahlForParallelStmt(ForLoc, T.getOpenLocation(), 
+          FirstPart.get(), SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
+    }
+    else if(AmdahlForToken == AmdahlForKind::AmdahlForCollapse) {
+      return Actions.ActOnAmdahlForCollapseStmt(ForLoc, T.getOpenLocation(), 
+          FirstPart.get(), SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
+    }
+  }
+
   return Actions.ActOnForStmt(ForLoc, T.getOpenLocation(), FirstPart.get(),
-                              SecondPart, ThirdPart, T.getCloseLocation(),
-                              Body.get());
+      SecondPart, ThirdPart, T.getCloseLocation(),
+      Body.get());
 }
 
 /// ParseGotoStatement

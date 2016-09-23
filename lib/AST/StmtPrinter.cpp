@@ -22,6 +22,7 @@
 #include "clang/AST/ExprCXX.h"
 #include "clang/AST/ExprOpenMP.h"
 #include "clang/AST/PrettyPrinter.h"
+#include "clang/AST/StmtAmdahl.h"
 #include "clang/AST/StmtVisitor.h"
 #include "clang/Basic/CharInfo.h"
 #include "llvm/ADT/SmallString.h"

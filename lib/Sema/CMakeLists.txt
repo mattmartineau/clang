@@ -19,6 +19,7 @@ add_clang_library(clangSema
   ScopeInfo.cpp
   Sema.cpp
   SemaAccess.cpp
+  SemaAmdahl.cpp
   SemaAttr.cpp
   SemaCXXScopeSpec.cpp
   SemaCast.cpp

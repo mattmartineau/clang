@@ -193,6 +193,10 @@ def MSDependentExistsStmt : Stmt;
 // OpenCL Extensions.
 def AsTypeExpr : DStmt<Expr>;
 
+// Amdahl Extensions.
+def AmdahlForParallelStmt : DStmt<ForStmt>;
+def AmdahlForCollapseStmt : DStmt<ForStmt>;
+
 // OpenMP Directives.
 def OMPExecutableDirective : Stmt<1>;
 def OMPLoopDirective : DStmt<OMPExecutableDirective, 1>;

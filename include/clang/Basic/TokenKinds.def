@@ -246,6 +246,7 @@ PUNCTUATOR(caretcaret,            "^^")
 //               MSVC <= v18.
 //   KEYOPENCL  - This is a keyword in OpenCL
 //   KEYNOOPENCL  - This is a keyword that is not supported in OpenCL
+//   KEYAMDAHL  - This is a keyword in Amdahl
 //   KEYALTIVEC - This is a keyword in AltiVec
 //   KEYZVECTOR - This is a keyword for the System z vector extensions,
 //                which are heavily based on AltiVec
@@ -270,6 +271,8 @@ KEYWORD(enum                        , KEYALL)
 KEYWORD(extern                      , KEYALL)
 KEYWORD(float                       , KEYALL)
 KEYWORD(for                         , KEYALL)
+KEYWORD(pfor                        , KEYAMDAHL)
+KEYWORD(cfor                        , KEYAMDAHL)
 KEYWORD(goto                        , KEYALL)
 KEYWORD(if                          , KEYALL)
 KEYWORD(inline                      , KEYC99|KEYCXX|KEYGNU)

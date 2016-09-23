@@ -27,6 +27,7 @@
 #include "clang/AST/NSAPI.h"
 #include "clang/AST/PrettyPrinter.h"
 #include "clang/AST/TypeLoc.h"
+#include "clang/Basic/AmdahlKinds.h"
 #include "clang/Basic/ExpressionTraits.h"
 #include "clang/Basic/LangOptions.h"
 #include "clang/Basic/Module.h"
@@ -3455,6 +3456,7 @@ public:
                           FullExprArg Third,
                           SourceLocation RParenLoc,
                           Stmt *Body);
+
   ExprResult CheckObjCForCollectionOperand(SourceLocation forLoc,
                                            Expr *collection);
   StmtResult ActOnObjCForCollectionStmt(SourceLocation ForColLoc,
@@ -8586,6 +8588,25 @@ public:
                                           SourceLocation StartLoc,
                                           SourceLocation LParenLoc,
                                           SourceLocation EndLoc);
+
+  //===--------------------------------------------------------------------===//
+  // Amdahl statements.
+  //
+  StmtResult ActOnAmdahlForParallelStmt(SourceLocation ForLoc,
+                                SourceLocation LParenLoc,
+                                Stmt *First,
+                                ConditionResult Second,
+                                FullExprArg Third,
+                                SourceLocation RParenLoc,
+                                Stmt *Body);
+
+  StmtResult ActOnAmdahlForCollapseStmt(SourceLocation ForLoc,
+                                SourceLocation LParenLoc,
+                                Stmt *First,
+                                ConditionResult Second,
+                                FullExprArg Third,
+                                SourceLocation RParenLoc,
+                                Stmt *Body);
 
   /// \brief The kind of conversion being performed.
   enum CheckedConversionKind {
