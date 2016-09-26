@@ -253,6 +253,14 @@ StmtProfiler::VisitObjCAutoreleasePoolStmt(const ObjCAutoreleasePoolStmt *S) {
   VisitStmt(S);
 }
 
+void StmtProfiler::VisitAmdahlForParallelStmt(const AmdahlForParallelStmt *S) {
+  VisitStmt(S);
+}
+
+void StmtProfiler::VisitAmdahlForCollapseStmt(const AmdahlForCollapseStmt *S) {
+  VisitStmt(S);
+}
+
 namespace {
 class OMPClauseProfiler : public ConstOMPClauseVisitor<OMPClauseProfiler> {
   StmtProfiler *Profiler;

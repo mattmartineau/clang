@@ -248,8 +248,9 @@ Retry:
     SemiError = "do/while";
     break;
   case tok::kw_for:                 // C99 6.8.5.3: for-statement
+  case tok::kw_pfor:
+  case tok::kw_cfor:
     return ParseForStatement(TrailingElseLoc);
-
   case tok::kw_goto:                // C99 6.8.6.1: goto-statement
     Res = ParseGotoStatement();
     SemiError = "goto";

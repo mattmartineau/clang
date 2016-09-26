@@ -589,6 +589,20 @@ void StmtPrinter::VisitSEHLeaveStmt(SEHLeaveStmt *Node) {
 }
 
 //===----------------------------------------------------------------------===//
+//  Amdahl extension printing methods
+//===----------------------------------------------------------------------===//
+
+void StmtPrinter::VisitAmdahlForParallelStmt(AmdahlForParallelStmt *Node) {
+  OS << "p";
+  VisitForStmt(Node);
+}
+
+void StmtPrinter::VisitAmdahlForCollapseStmt(AmdahlForCollapseStmt *Node) {
+  OS << "c";
+  VisitForStmt(Node);
+}
+
+//===----------------------------------------------------------------------===//
 //  OpenMP clauses printing methods
 //===----------------------------------------------------------------------===//
 

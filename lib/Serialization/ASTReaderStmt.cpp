@@ -2870,6 +2870,18 @@ void ASTStmtReader::VisitOMPTeamsDistributeDirective(
 }
 
 //===----------------------------------------------------------------------===//
+// Amdahl visitor routines
+//===----------------------------------------------------------------------===//
+
+void ASTStmtReader::VisitAmdahlForParallelStmt(AmdahlForParallelStmt *Node) {
+  VisitForStmt(Node);
+}
+
+void ASTStmtReader::VisitAmdahlForCollapseStmt(AmdahlForCollapseStmt *Node) {
+  VisitForStmt(Node);
+}
+
+//===----------------------------------------------------------------------===//
 // ASTReader Implementation
 //===----------------------------------------------------------------------===//
 

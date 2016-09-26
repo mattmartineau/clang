@@ -19,6 +19,7 @@ using namespace CodeGen;
 void CodeGenFunction::EmitAmdahlForParallelStmt(const ForStmt &S,
                                   ArrayRef<const Attr *> ForAttrs) {
 
+  printf("entering amdahl emit statement\n");
   auto AmdahlPForBeginBlock = createBasicBlock("amdahl.pfor.begin");
   EmitBlock(AmdahlPForBeginBlock);
 
@@ -278,3 +279,11 @@ LoopStack.pop();
 // Emit the fall-through block.
 EmitBlock(LoopExit.getBlock(), true);
 #endif // if 0
+
+void CodeGenFunction::EmitAmdahlForCollapseStmt(const ForStmt &S,
+                                  ArrayRef<const Attr *> ForAttrs) {
+
+  auto AmdahlPForBeginBlock = createBasicBlock("amdahl.cfor.begin");
+  EmitBlock(AmdahlPForBeginBlock);
+}
+

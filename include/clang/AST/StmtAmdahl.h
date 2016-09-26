@@ -20,13 +20,23 @@
 namespace clang {
 
 class AmdahlForParallelStmt : public ForStmt {
-  AmdahlForParallelStmt(ForStmt Parent) : ForStmt(Parent) { }
-  explicit AmdahlForParallelStmt(EmptyShell Empty) : ForStmt(Empty) { }
+  public:
+  AmdahlForParallelStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
+      VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
+      SourceLocation LP, SourceLocation RP)
+    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForParallelStmtClass) {}
+
+  //static bool classof(const Stmt *T) {
+  //  return T->getStmtClass() == AmdahlForParallelStmtClass;
+  //}
 };
 
 class AmdahlForCollapseStmt : public ForStmt {
-  AmdahlForCollapseStmt(ForStmt Parent) : ForStmt(Parent) { }
-  explicit AmdahlForCollapseStmt(EmptyShell Empty) : ForStmt(Empty) { }
+  public:
+  AmdahlForCollapseStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
+      VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
+      SourceLocation LP, SourceLocation RP)
+    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForCollapseStmtClass) {}
 };
 
 }
