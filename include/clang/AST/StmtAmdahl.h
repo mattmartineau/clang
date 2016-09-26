@@ -16,27 +16,46 @@
 #define LLVM_CLANG_AST_STMTAMDAHL_H
 
 #include "clang/AST/Stmt.h"
+#include "clang/AST/Expr.h"
+#include "clang/AST/OpenMPClause.h"
+#include "clang/AST/Stmt.h"
+#include "clang/Basic/OpenMPKinds.h"
+#include "clang/Basic/SourceLocation.h"
 
 namespace clang {
 
 class AmdahlForParallelStmt : public ForStmt {
-  public:
+  friend class ASTStmtReader;
+
+public:
   AmdahlForParallelStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
       VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
       SourceLocation LP, SourceLocation RP)
     : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForParallelStmtClass) {}
 
-  //static bool classof(const Stmt *T) {
-  //  return T->getStmtClass() == AmdahlForParallelStmtClass;
-  //}
+  /// \brief Build an empty for statement.
+  explicit AmdahlForParallelStmt(EmptyShell Empty) : ForStmt(Empty) { }
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == AmdahlForParallelStmtClass;
+  }
 };
 
 class AmdahlForCollapseStmt : public ForStmt {
-  public:
+  friend class ASTStmtReader;
+
+public:
   AmdahlForCollapseStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
       VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
       SourceLocation LP, SourceLocation RP)
     : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForCollapseStmtClass) {}
+
+  /// \brief Build an empty for statement.
+  explicit AmdahlForCollapseStmt(EmptyShell Empty) : ForStmt(Empty) { }
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == AmdahlForCollapseStmtClass;
+  }
 };
 
 }

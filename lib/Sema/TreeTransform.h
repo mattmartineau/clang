@@ -8618,6 +8618,18 @@ TreeTransform<Derived>::TransformOMPArraySectionExpr(OMPArraySectionExpr *E) {
 }
 
 template<typename Derived>
+StmtResult
+TreeTransform<Derived>::TransformAmdahlForParallelStmt(AmdahlForParallelStmt *S) {
+  return TransformForStmt(S);
+}
+
+template<typename Derived>
+StmtResult
+TreeTransform<Derived>::TransformAmdahlForCollapseStmt(AmdahlForCollapseStmt *S) {
+  return TransformForStmt(S);
+}
+
+template<typename Derived>
 ExprResult
 TreeTransform<Derived>::TransformCallExpr(CallExpr *E) {
   // Transform the callee.

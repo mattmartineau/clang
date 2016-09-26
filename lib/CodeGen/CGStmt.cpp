@@ -302,10 +302,10 @@ void CodeGenFunction::EmitStmt(const Stmt *S) {
     EmitOMPTeamsDistributeDirective(cast<OMPTeamsDistributeDirective>(*S));
     break;
   case Stmt::AmdahlForParallelStmtClass:
-    EmitAmdahlForParallelStmt(cast<ForStmt>(*S));
+    EmitAmdahlForParallelStmt(cast<AmdahlForParallelStmt>(*S));
     break;
   case Stmt::AmdahlForCollapseStmtClass:
-    EmitAmdahlForCollapseStmt(cast<ForStmt>(*S));
+    EmitAmdahlForCollapseStmt(cast<AmdahlForCollapseStmt>(*S));
     break;
   }
 }
@@ -543,10 +543,10 @@ void CodeGenFunction::EmitAttributedStmt(const AttributedStmt &S) {
     EmitCXXForRangeStmt(cast<CXXForRangeStmt>(*SubStmt), S.getAttrs());
     break;
   case Stmt::AmdahlForParallelStmtClass:
-    EmitAmdahlForParallelStmt(cast<ForStmt>(*SubStmt), S.getAttrs());
+    EmitAmdahlForParallelStmt(cast<AmdahlForParallelStmt>(*SubStmt), S.getAttrs());
     break;
   case Stmt::AmdahlForCollapseStmtClass:
-    EmitAmdahlForCollapseStmt(cast<ForStmt>(*SubStmt), S.getAttrs());
+    EmitAmdahlForCollapseStmt(cast<AmdahlForCollapseStmt>(*SubStmt), S.getAttrs());
     break;
   default:
     EmitStmt(SubStmt);
