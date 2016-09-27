@@ -39,6 +39,11 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
   delete CGF.CapturedStmtInfo;
 #endif // if 0
 
+  S.dump();
+
+  auto Body = S.getBody();
+  Body->dump();
+
   EmitForStmt(cast<ForStmt>(S));
 
   auto AmdahlCollapseForEndBlock = createBasicBlock("amdahl.pfor.end");

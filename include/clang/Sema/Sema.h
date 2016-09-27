@@ -27,7 +27,6 @@
 #include "clang/AST/NSAPI.h"
 #include "clang/AST/PrettyPrinter.h"
 #include "clang/AST/TypeLoc.h"
-#include "clang/Basic/AmdahlKinds.h"
 #include "clang/Basic/ExpressionTraits.h"
 #include "clang/Basic/LangOptions.h"
 #include "clang/Basic/Module.h"
@@ -8592,21 +8591,10 @@ public:
   //===--------------------------------------------------------------------===//
   // Amdahl statements.
   //
-  StmtResult ActOnAmdahlParallelForStmt(SourceLocation ForLoc,
-                                SourceLocation LParenLoc,
-                                Stmt *First,
-                                ConditionResult Second,
-                                FullExprArg Third,
-                                SourceLocation RParenLoc,
-                                Stmt *Body);
+  StmtResult ActOnAmdahlParallelForStmt(
+      ForStmt* BaseForStmt, Scope* CompoundScope, bool* CapturedBody);
 
-  StmtResult ActOnAmdahlCollapseForStmt(SourceLocation ForLoc,
-                                SourceLocation LParenLoc,
-                                Stmt *First,
-                                ConditionResult Second,
-                                FullExprArg Third,
-                                SourceLocation RParenLoc,
-                                Stmt *Body);
+  StmtResult ActOnAmdahlCollapseForStmt(ForStmt* BaseForStmt);
 
   /// \brief The kind of conversion being performed.
   enum CheckedConversionKind {

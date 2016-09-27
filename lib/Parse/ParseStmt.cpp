@@ -13,7 +13,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "RAIIObjectsForParser.h"
-#include "clang/Basic/AmdahlKinds.h"
 #include "clang/Basic/Attributes.h"
 #include "clang/Basic/PrettyStackTrace.h"
 #include "clang/Parse/Parser.h"
@@ -248,8 +247,6 @@ Retry:
     SemiError = "do/while";
     break;
   case tok::kw_for:                 // C99 6.8.5.3: for-statement
-  case tok::kw_pfor:
-  case tok::kw_cfor:
     return ParseForStatement(TrailingElseLoc);
   case tok::kw_goto:                // C99 6.8.6.1: goto-statement
     Res = ParseGotoStatement();
@@ -378,6 +375,22 @@ Retry:
   case tok::annot_pragma_dump:
     HandlePragmaDump();
     return StmtEmpty();
+
+  case tok::kw_pfor:
+    {
+      /// TODO: This CapturedBody needs to be changed or encapsulated.
+      static bool CapturedBody = false;
+      auto ForStmtAction = ParseForStatement(TrailingElseLoc);
+      Sema::CompoundScopeRAII CompoundScope(Actions);
+      return Actions.ActOnAmdahlParallelForStmt(
+          cast<ForStmt>(ForStmtAction.get()), getCurScope(), &CapturedBody);
+    }
+
+  case tok::kw_cfor:
+    {
+      auto ForStmtAction = ParseForStatement(TrailingElseLoc);
+      return Actions.ActOnAmdahlCollapseForStmt(cast<ForStmt>(ForStmtAction.get()));
+    }
   }
 
   // If we reached this code, the statement must end in a semicolon.
@@ -1514,19 +1527,10 @@ bool Parser::isForRangeIdentifier() {
 /// [C++0x]   braced-init-list            [TODO]
 StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
 
-  // Check if we have been passed one of the extended Amdahl for statements.
-  AmdahlForKind AmdahlForToken = AmdahlForKind::AmdahlForSequential;
-  if(getLangOpts().Amdahl) {
-    if(Tok.is(tok::kw_pfor)) {
-      AmdahlForToken = AmdahlForKind::AmdahlParallelFor;
-    }
-    else if (Tok.is(tok::kw_cfor)){
-      AmdahlForToken = AmdahlForKind::AmdahlCollapseFor;
-    }
-  }
-
-  assert((Tok.is(tok::kw_for) || 
-       (AmdahlForToken != AmdahlForKind::AmdahlForSequential)) && "Not a for stmt!");
+  // Adjusted to include Amdahl for statements.
+  assert(
+      (Tok.is(tok::kw_for) || Tok.is(tok::kw_pfor) || Tok.is(tok::kw_cfor)) 
+      && "Not a for stmt!");
 
   SourceLocation ForLoc = ConsumeToken();  // eat the 'for'.
 
@@ -1814,6 +1818,7 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
   if (ForRange)
     return Actions.FinishCXXForRangeStmt(ForRangeStmt.get(), Body.get());
 
+#if 0
   // Check if we have been passed one of the extended Amdahl for statements.
   if(getLangOpts().Amdahl) {
     if(AmdahlForToken == AmdahlForKind::AmdahlParallelFor) {
@@ -1825,10 +1830,10 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
           FirstPart.get(), SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
     }
   }
+#endif // if 0
 
   return Actions.ActOnForStmt(ForLoc, T.getOpenLocation(), FirstPart.get(),
-      SecondPart, ThirdPart, T.getCloseLocation(),
-      Body.get());
+      SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
 }
 
 /// ParseGotoStatement

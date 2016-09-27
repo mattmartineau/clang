@@ -45,18 +45,15 @@ class AmdahlCollapseForStmt : public ForStmt {
   friend class ASTStmtReader;
 
 public:
-  AmdahlCollapseForStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
-      VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
-      SourceLocation LP, SourceLocation RP)
-    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlCollapseForStmtClass) 
-  {
+  AmdahlCollapseForStmt(const ForStmt& ChildForStmt, const ASTContext &C)
+    : ForStmt(ChildForStmt, C, AmdahlCollapseForStmtClass) 
+  { 
   }
 
   /// \brief Build an empty for statement.
   explicit AmdahlCollapseForStmt(EmptyShell Empty) : ForStmt(Empty) { }
 
-  static bool classof(const Stmt *T) 
-  {
+  static bool classof(const Stmt *T) {
     return T->getStmtClass() == AmdahlCollapseForStmtClass;
   }
 };

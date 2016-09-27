@@ -17,32 +17,38 @@
 
 using namespace clang;
 
-StmtResult Sema::ActOnAmdahlParallelForStmt(SourceLocation ForLoc,
-                              SourceLocation LParenLoc,
-                              Stmt *First,
-                              ConditionResult Second,
-                              FullExprArg third,
-                              SourceLocation RParenLoc,
-                              Stmt *Body)
+StmtResult Sema::ActOnAmdahlParallelForStmt(
+    ForStmt* BaseForStmt, Scope* CompoundScope, bool* CapturedBody)
 {
-  auto BaseForStmt = ActOnForStmt(ForLoc, LParenLoc, First, Second, third, RParenLoc, Body);
+  // Check for closely nested Amdahl loop.
+  auto ImmediateDescendent = BaseForStmt->getBody();
+  if(isa<AmdahlCollapseForStmt>(ImmediateDescendent)) {
+    // We're going to steal it's iteration space.
+  }
+  else if (isa<AmdahlParallelForStmt>(ImmediateDescendent)) {
+    // We're going to shape the parallelism, whatever that means.
+  }
 
-  return new (Context) AmdahlParallelForStmt(cast<ForStmt>(*BaseForStmt.get()), Context);
+  // Check if we are the inner most loop.
+  if(!(*CapturedBody)) {
+    // We have processed all of the parallel loops, capture the body.
+    QualType KmpInt32Ty = Context.getIntTypeForBitwidth(32, 1);
+    Sema::CapturedParamNameType Params[] = {
+      std::make_pair(".amdahl_id.", KmpInt32Ty),
+      std::make_pair(StringRef(), QualType()) // __context with shared vars
+    };
+    Stmt* Body = BaseForStmt->getBody();
+    ActOnCapturedRegionStart(Body->getLocStart(), CompoundScope, CR_Default, Params);
+    auto CapturedBodyAction = ActOnCapturedRegionEnd(Body);
+    BaseForStmt->setBody(CapturedBodyAction.get());
+    *CapturedBody = true;
+  }
+
+  return new (Context) AmdahlParallelForStmt(*BaseForStmt, Context);
 }
 
-StmtResult Sema::ActOnAmdahlCollapseForStmt(SourceLocation ForLoc,
-                              SourceLocation LParenLoc,
-                              Stmt *First,
-                              ConditionResult Second,
-                              FullExprArg third,
-                              SourceLocation RParenLoc,
-                              Stmt *Body)
+StmtResult Sema::ActOnAmdahlCollapseForStmt(ForStmt* BaseForStmt)
 {
-  ActOnForStmt(ForLoc, LParenLoc, First, Second, third, RParenLoc, Body);
-
-  Expr *Third  = third.get();
-  return new (Context)
-      AmdahlCollapseForStmt(Context, First, Second.get().second, Second.get().first, Third,
-              Body, ForLoc, LParenLoc, RParenLoc);
+  return new (Context) AmdahlCollapseForStmt(*BaseForStmt, Context);
 }
 
