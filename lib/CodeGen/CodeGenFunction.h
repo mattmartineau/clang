@@ -2543,9 +2543,9 @@ public:
                                   OMPPrivateScope &LoopScope);
 
   // Amdahl
-  void EmitAmdahlForParallelStmt(const AmdahlForParallelStmt &S,
+  void EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
                    ArrayRef<const Attr *> Attrs = None);
-  void EmitAmdahlForCollapseStmt(const AmdahlForCollapseStmt &S,
+  void EmitAmdahlCollapseForStmt(const AmdahlCollapseForStmt &S,
                    ArrayRef<const Attr *> Attrs = None);
 private:
   /// Helpers for the OpenMP loop directives.

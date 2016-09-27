@@ -24,20 +24,20 @@
 
 namespace clang {
 
-class AmdahlForParallelStmt : public ForStmt {
+class AmdahlParallelForStmt : public ForStmt {
   friend class ASTStmtReader;
 
 public:
-  AmdahlForParallelStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
+  AmdahlParallelForStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
       VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
       SourceLocation LP, SourceLocation RP)
-    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForParallelStmtClass) 
+    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlParallelForStmtClass) 
   { 
     *child_begin() = Body;
   }
 
   /// \brief Build an empty for statement.
-  explicit AmdahlForParallelStmt(EmptyShell Empty) : ForStmt(Empty) { }
+  explicit AmdahlParallelForStmt(EmptyShell Empty) : ForStmt(Empty) { }
 
   /// \brief Returns body associated with the Amdahl for.
   Stmt *getBody() const {
@@ -45,27 +45,27 @@ public:
   }
 
   static bool classof(const Stmt *T) {
-    return T->getStmtClass() == AmdahlForParallelStmtClass;
+    return T->getStmtClass() == AmdahlParallelForStmtClass;
   }
 };
 
-class AmdahlForCollapseStmt : public ForStmt {
+class AmdahlCollapseForStmt : public ForStmt {
   friend class ASTStmtReader;
 
 public:
-  AmdahlForCollapseStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
+  AmdahlCollapseForStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
       VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
       SourceLocation LP, SourceLocation RP)
-    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForCollapseStmtClass) 
+    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlCollapseForStmtClass) 
   {
   }
 
   /// \brief Build an empty for statement.
-  explicit AmdahlForCollapseStmt(EmptyShell Empty) : ForStmt(Empty) { }
+  explicit AmdahlCollapseForStmt(EmptyShell Empty) : ForStmt(Empty) { }
 
   static bool classof(const Stmt *T) 
   {
-    return T->getStmtClass() == AmdahlForCollapseStmtClass;
+    return T->getStmtClass() == AmdahlCollapseForStmtClass;
   }
 };
 

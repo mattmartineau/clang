@@ -17,7 +17,7 @@
 
 using namespace clang;
 
-StmtResult Sema::ActOnAmdahlForParallelStmt(SourceLocation ForLoc,
+StmtResult Sema::ActOnAmdahlParallelForStmt(SourceLocation ForLoc,
                               SourceLocation LParenLoc,
                               Stmt *First,
                               ConditionResult Second,
@@ -29,11 +29,11 @@ StmtResult Sema::ActOnAmdahlForParallelStmt(SourceLocation ForLoc,
   ActOnForStmt(ForLoc, LParenLoc, First, Second, third, RParenLoc, Body);
 
   return new (Context)
-      AmdahlForParallelStmt(Context, First, Second.get().second, Second.get().first, Third,
+      AmdahlParallelForStmt(Context, First, Second.get().second, Second.get().first, Third,
               Body, ForLoc, LParenLoc, RParenLoc);
 }
 
-StmtResult Sema::ActOnAmdahlForCollapseStmt(SourceLocation ForLoc,
+StmtResult Sema::ActOnAmdahlCollapseForStmt(SourceLocation ForLoc,
                               SourceLocation LParenLoc,
                               Stmt *First,
                               ConditionResult Second,
@@ -45,7 +45,7 @@ StmtResult Sema::ActOnAmdahlForCollapseStmt(SourceLocation ForLoc,
 
   Expr *Third  = third.get();
   return new (Context)
-      AmdahlForCollapseStmt(Context, First, Second.get().second, Second.get().first, Third,
+      AmdahlCollapseForStmt(Context, First, Second.get().second, Second.get().first, Third,
               Body, ForLoc, LParenLoc, RParenLoc);
 }
 

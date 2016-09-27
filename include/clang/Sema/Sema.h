@@ -8592,7 +8592,7 @@ public:
   //===--------------------------------------------------------------------===//
   // Amdahl statements.
   //
-  StmtResult ActOnAmdahlForParallelStmt(SourceLocation ForLoc,
+  StmtResult ActOnAmdahlParallelForStmt(SourceLocation ForLoc,
                                 SourceLocation LParenLoc,
                                 Stmt *First,
                                 ConditionResult Second,
@@ -8600,7 +8600,7 @@ public:
                                 SourceLocation RParenLoc,
                                 Stmt *Body);
 
-  StmtResult ActOnAmdahlForCollapseStmt(SourceLocation ForLoc,
+  StmtResult ActOnAmdahlCollapseForStmt(SourceLocation ForLoc,
                                 SourceLocation LParenLoc,
                                 Stmt *First,
                                 ConditionResult Second,

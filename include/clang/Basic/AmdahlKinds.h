@@ -17,8 +17,8 @@
 
 namespace clang {
   enum AmdahlForKind {
-    AmdahlForParallel,
-    AmdahlForCollapse,
+    AmdahlParallelFor,
+    AmdahlCollapseFor,
     AmdahlForSequential
   };
 }

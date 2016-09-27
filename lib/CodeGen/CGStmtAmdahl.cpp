@@ -18,11 +18,11 @@
 using namespace clang;
 using namespace CodeGen;
 
-void CodeGenFunction::EmitAmdahlForParallelStmt(const AmdahlForParallelStmt &S,
+void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
                                   ArrayRef<const Attr *> ForAttrs) {
 
-  auto AmdahlForParallelBeginBlock = createBasicBlock("amdahl.pfor.begin");
-  EmitBlock(AmdahlForParallelBeginBlock);
+  auto AmdahlParallelForBeginBlock = createBasicBlock("amdahl.pfor.begin");
+  EmitBlock(AmdahlParallelForBeginBlock);
 
   // Get the captured statement
   //auto SubStmt = cast<Stmt>(cast<ForStmt>(S));
@@ -37,8 +37,8 @@ void CodeGenFunction::EmitAmdahlForParallelStmt(const AmdahlForParallelStmt &S,
   llvm::Function *F = CGF.GenerateCapturedStmtFunction(*CS);
   delete CGF.CapturedStmtInfo;
 
-  auto AmdahlForCollapseEndBlock = createBasicBlock("amdahl.pfor.end");
-  EmitBlock(AmdahlForCollapseEndBlock);
+  auto AmdahlCollapseForEndBlock = createBasicBlock("amdahl.pfor.end");
+  EmitBlock(AmdahlCollapseForEndBlock);
 
 #if 0
   CGOpenMPOutlinedRegionInfo CGInfo(*CS, ThreadIDVar, CodeGen, InnermostKind,
@@ -188,7 +188,7 @@ llvm::FunctionType::get(CGM.VoidTy, TypeParams, /*isVarArg*/ true);
 RTLFn = CGM.CreateRuntimeFunction(FnTy, "__kmpc_fork_call");
 #endif // if 0
 
-void CodeGenFunction::EmitAmdahlForCollapseStmt(const AmdahlForCollapseStmt &S,
+void CodeGenFunction::EmitAmdahlCollapseForStmt(const AmdahlCollapseForStmt &S,
                                   ArrayRef<const Attr *> ForAttrs) {
 
   auto AmdahlPForBeginBlock = createBasicBlock("amdahl.cfor.begin");

@@ -2522,11 +2522,11 @@ void ASTStmtWriter::VisitOMPTeamsDistributeDirective(
 // Amdahl visitor routines
 //===----------------------------------------------------------------------===//
 
-void ASTStmtWriter::VisitAmdahlForParallelStmt(AmdahlForParallelStmt *Node) {
+void ASTStmtWriter::VisitAmdahlParallelForStmt(AmdahlParallelForStmt *Node) {
   VisitForStmt(Node);
 }
 
-void ASTStmtWriter::VisitAmdahlForCollapseStmt(AmdahlForCollapseStmt *Node) {
+void ASTStmtWriter::VisitAmdahlCollapseForStmt(AmdahlCollapseForStmt *Node) {
   VisitForStmt(Node);
 }
 

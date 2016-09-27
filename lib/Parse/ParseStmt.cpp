@@ -1518,10 +1518,10 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
   AmdahlForKind AmdahlForToken = AmdahlForKind::AmdahlForSequential;
   if(getLangOpts().Amdahl) {
     if(Tok.is(tok::kw_pfor)) {
-      AmdahlForToken = AmdahlForKind::AmdahlForParallel;
+      AmdahlForToken = AmdahlForKind::AmdahlParallelFor;
     }
     else if (Tok.is(tok::kw_cfor)){
-      AmdahlForToken = AmdahlForKind::AmdahlForCollapse;
+      AmdahlForToken = AmdahlForKind::AmdahlCollapseFor;
     }
   }
 
@@ -1816,12 +1816,12 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
 
   // Check if we have been passed one of the extended Amdahl for statements.
   if(getLangOpts().Amdahl) {
-    if(AmdahlForToken == AmdahlForKind::AmdahlForParallel) {
-      return Actions.ActOnAmdahlForParallelStmt(ForLoc, T.getOpenLocation(), 
+    if(AmdahlForToken == AmdahlForKind::AmdahlParallelFor) {
+      return Actions.ActOnAmdahlParallelForStmt(ForLoc, T.getOpenLocation(), 
           FirstPart.get(), SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
     }
-    else if(AmdahlForToken == AmdahlForKind::AmdahlForCollapse) {
-      return Actions.ActOnAmdahlForCollapseStmt(ForLoc, T.getOpenLocation(), 
+    else if(AmdahlForToken == AmdahlForKind::AmdahlCollapseFor) {
+      return Actions.ActOnAmdahlCollapseForStmt(ForLoc, T.getOpenLocation(), 
           FirstPart.get(), SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
     }
   }

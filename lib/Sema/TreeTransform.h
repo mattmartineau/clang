@@ -8619,13 +8619,13 @@ TreeTransform<Derived>::TransformOMPArraySectionExpr(OMPArraySectionExpr *E) {
 
 template<typename Derived>
 StmtResult
-TreeTransform<Derived>::TransformAmdahlForParallelStmt(AmdahlForParallelStmt *S) {
+TreeTransform<Derived>::TransformAmdahlParallelForStmt(AmdahlParallelForStmt *S) {
   return TransformForStmt(S);
 }
 
 template<typename Derived>
 StmtResult
-TreeTransform<Derived>::TransformAmdahlForCollapseStmt(AmdahlForCollapseStmt *S) {
+TreeTransform<Derived>::TransformAmdahlCollapseForStmt(AmdahlCollapseForStmt *S) {
   return TransformForStmt(S);
 }
 

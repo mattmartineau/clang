@@ -592,12 +592,12 @@ void StmtPrinter::VisitSEHLeaveStmt(SEHLeaveStmt *Node) {
 //  Amdahl extension printing methods
 //===----------------------------------------------------------------------===//
 
-void StmtPrinter::VisitAmdahlForParallelStmt(AmdahlForParallelStmt *Node) {
+void StmtPrinter::VisitAmdahlParallelForStmt(AmdahlParallelForStmt *Node) {
   OS << "p";
   VisitForStmt(Node);
 }
 
-void StmtPrinter::VisitAmdahlForCollapseStmt(AmdahlForCollapseStmt *Node) {
+void StmtPrinter::VisitAmdahlCollapseForStmt(AmdahlCollapseForStmt *Node) {
   OS << "c";
   VisitForStmt(Node);
 }

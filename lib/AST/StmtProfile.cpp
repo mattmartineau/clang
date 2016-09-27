@@ -253,11 +253,11 @@ StmtProfiler::VisitObjCAutoreleasePoolStmt(const ObjCAutoreleasePoolStmt *S) {
   VisitStmt(S);
 }
 
-void StmtProfiler::VisitAmdahlForParallelStmt(const AmdahlForParallelStmt *S) {
+void StmtProfiler::VisitAmdahlParallelForStmt(const AmdahlParallelForStmt *S) {
   VisitStmt(S);
 }
 
-void StmtProfiler::VisitAmdahlForCollapseStmt(const AmdahlForCollapseStmt *S) {
+void StmtProfiler::VisitAmdahlCollapseForStmt(const AmdahlCollapseForStmt *S) {
   VisitStmt(S);
 }
 
