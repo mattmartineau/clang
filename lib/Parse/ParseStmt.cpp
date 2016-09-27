@@ -378,18 +378,18 @@ Retry:
 
   case tok::kw_pfor:
     {
-      /// TODO: This CapturedBody needs to be changed or encapsulated.
-      static bool CapturedBody = false;
       auto ForStmtAction = ParseForStatement(TrailingElseLoc);
       Sema::CompoundScopeRAII CompoundScope(Actions);
       return Actions.ActOnAmdahlParallelForStmt(
-          cast<ForStmt>(ForStmtAction.get()), getCurScope(), &CapturedBody);
+          cast<ForStmt>(ForStmtAction.get()), getCurScope());
     }
 
   case tok::kw_cfor:
     {
       auto ForStmtAction = ParseForStatement(TrailingElseLoc);
-      return Actions.ActOnAmdahlCollapseForStmt(cast<ForStmt>(ForStmtAction.get()));
+      Sema::CompoundScopeRAII CompoundScope(Actions);
+      return Actions.ActOnAmdahlCollapseForStmt(
+          cast<ForStmt>(ForStmtAction.get()), getCurScope());
     }
   }
 
