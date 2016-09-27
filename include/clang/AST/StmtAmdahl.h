@@ -31,10 +31,18 @@ public:
   AmdahlForParallelStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
       VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
       SourceLocation LP, SourceLocation RP)
-    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForParallelStmtClass) {}
+    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForParallelStmtClass) 
+  { 
+    *child_begin() = Body;
+  }
 
   /// \brief Build an empty for statement.
   explicit AmdahlForParallelStmt(EmptyShell Empty) : ForStmt(Empty) { }
+
+  /// \brief Returns body associated with the Amdahl for.
+  Stmt *getBody() const {
+    return const_cast<Stmt *>(*child_begin());
+  }
 
   static bool classof(const Stmt *T) {
     return T->getStmtClass() == AmdahlForParallelStmtClass;
@@ -48,12 +56,15 @@ public:
   AmdahlForCollapseStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
       VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
       SourceLocation LP, SourceLocation RP)
-    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForCollapseStmtClass) {}
+    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlForCollapseStmtClass) 
+  {
+  }
 
   /// \brief Build an empty for statement.
   explicit AmdahlForCollapseStmt(EmptyShell Empty) : ForStmt(Empty) { }
 
-  static bool classof(const Stmt *T) {
+  static bool classof(const Stmt *T) 
+  {
     return T->getStmtClass() == AmdahlForCollapseStmtClass;
   }
 };
