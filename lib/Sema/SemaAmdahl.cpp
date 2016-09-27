@@ -25,12 +25,9 @@ StmtResult Sema::ActOnAmdahlParallelForStmt(SourceLocation ForLoc,
                               SourceLocation RParenLoc,
                               Stmt *Body)
 {
-  Expr *Third  = third.get();  
-  ActOnForStmt(ForLoc, LParenLoc, First, Second, third, RParenLoc, Body);
+  auto BaseForStmt = ActOnForStmt(ForLoc, LParenLoc, First, Second, third, RParenLoc, Body);
 
-  return new (Context)
-      AmdahlParallelForStmt(Context, First, Second.get().second, Second.get().first, Third,
-              Body, ForLoc, LParenLoc, RParenLoc);
+  return new (Context) AmdahlParallelForStmt(cast<ForStmt>(*BaseForStmt.get()), Context);
 }
 
 StmtResult Sema::ActOnAmdahlCollapseForStmt(SourceLocation ForLoc,

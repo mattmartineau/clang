@@ -801,14 +801,28 @@ bool IfStmt::isObjCAvailabilityCheck() const {
 
 ForStmt::ForStmt(const ASTContext &C, Stmt *Init, Expr *Cond, VarDecl *condVar,
                  Expr *Inc, Stmt *Body, SourceLocation FL, SourceLocation LP,
-                 SourceLocation RP, StmtClass ChildType)
-  : Stmt(ChildType), ForLoc(FL), LParenLoc(LP), RParenLoc(RP)
+                 SourceLocation RP, StmtClass ConcreteType)
+  : Stmt(ConcreteType), ForLoc(FL), LParenLoc(LP), RParenLoc(RP)
 {
   SubExprs[INIT] = Init;
   setConditionVariable(C, condVar);
   SubExprs[COND] = Cond;
   SubExprs[INC] = Inc;
   SubExprs[BODY] = Body;
+}
+
+ForStmt::ForStmt(
+    const ForStmt& RHS, const ASTContext &C, StmtClass ConcreteType)
+  : Stmt(ConcreteType)
+{
+  this->SubExprs[INIT] = RHS.SubExprs[INIT];
+  this->setConditionVariable(C, RHS.getConditionVariable());
+  this->SubExprs[COND] = RHS.SubExprs[COND];
+  this->SubExprs[INC] = RHS.SubExprs[INC];
+  this->SubExprs[BODY] = RHS.SubExprs[BODY];
+  this->ForLoc = RHS.ForLoc;
+  this->LParenLoc = RHS.LParenLoc;
+  this->RParenLoc = RHS.RParenLoc;
 }
 
 VarDecl *ForStmt::getConditionVariable() const {

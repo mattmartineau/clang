@@ -1163,6 +1163,9 @@ public:
           Expr *Inc, Stmt *Body, SourceLocation FL, SourceLocation LP,
           SourceLocation RP, StmtClass ConcreteType = ForStmtClass);
 
+  ForStmt(const ForStmt& RHS, const ASTContext &C, 
+          StmtClass ConcreteType = ForStmtClass);
+
   /// \brief Build an empty for statement.
   explicit ForStmt(EmptyShell Empty) : Stmt(ForStmtClass, Empty) { }
 

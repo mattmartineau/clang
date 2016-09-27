@@ -24,6 +24,7 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
   auto AmdahlParallelForBeginBlock = createBasicBlock("amdahl.pfor.begin");
   EmitBlock(AmdahlParallelForBeginBlock);
 
+#if 0
   // Get the captured statement
   //auto SubStmt = cast<Stmt>(cast<ForStmt>(S));
   auto CS = cast<CapturedStmt>(S.getBody());
@@ -36,6 +37,9 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
 
   llvm::Function *F = CGF.GenerateCapturedStmtFunction(*CS);
   delete CGF.CapturedStmtInfo;
+#endif // if 0
+
+  EmitForStmt(cast<ForStmt>(S));
 
   auto AmdahlCollapseForEndBlock = createBasicBlock("amdahl.pfor.end");
   EmitBlock(AmdahlCollapseForEndBlock);

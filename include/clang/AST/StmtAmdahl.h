@@ -28,21 +28,13 @@ class AmdahlParallelForStmt : public ForStmt {
   friend class ASTStmtReader;
 
 public:
-  AmdahlParallelForStmt(const ASTContext &C, Stmt *Init, Expr *Cond, 
-      VarDecl *CondVar, Expr *Inc, Stmt *Body, SourceLocation FL, 
-      SourceLocation LP, SourceLocation RP)
-    : ForStmt(C, Init, Cond, CondVar, Inc, Body, FL, LP, RP, AmdahlParallelForStmtClass) 
+  AmdahlParallelForStmt(const ForStmt& ChildForStmt, const ASTContext &C)
+    : ForStmt(ChildForStmt, C, AmdahlParallelForStmtClass) 
   { 
-    *child_begin() = Body;
   }
 
   /// \brief Build an empty for statement.
   explicit AmdahlParallelForStmt(EmptyShell Empty) : ForStmt(Empty) { }
-
-  /// \brief Returns body associated with the Amdahl for.
-  Stmt *getBody() const {
-    return const_cast<Stmt *>(*child_begin());
-  }
 
   static bool classof(const Stmt *T) {
     return T->getStmtClass() == AmdahlParallelForStmtClass;
