@@ -19,24 +19,24 @@
 using namespace clang;
 
 StmtResult Sema::ActOnAmdahlParallelForStmt(
-    ForStmt* BaseForStmt, Scope* CompoundScope)
+    ForStmt* OuterForStmt, Scope* CompoundScope)
 {
-  HandleAmdahlNesting(BaseForStmt, CompoundScope);
-  return new (Context) AmdahlParallelForStmt(*BaseForStmt, Context);
+  HandleAmdahlNesting(OuterForStmt, CompoundScope);
+  return new (Context) AmdahlParallelForStmt(*OuterForStmt, Context);
 }
 
 StmtResult Sema::ActOnAmdahlCollapseForStmt(
-    ForStmt* BaseForStmt, Scope* CompoundScope)
+    ForStmt* OuterForStmt, Scope* CompoundScope)
 {
-  HandleAmdahlNesting(BaseForStmt, CompoundScope);
-  return new (Context) AmdahlCollapseForStmt(*BaseForStmt, Context);
+  HandleAmdahlNesting(OuterForStmt, CompoundScope);
+  return new (Context) AmdahlCollapseForStmt(*OuterForStmt, Context);
 }
 
 void Sema::HandleAmdahlNesting(
-    ForStmt* BaseForStmt, Scope* CompoundScope)
+    ForStmt* OuterForStmt, Scope* CompoundScope)
 {
   // Check for closely nested Amdahl loop.
-  auto ImmediateDescendent = cast<CompoundStmt>(BaseForStmt->getBody())->body_front();
+  auto ImmediateDescendent = cast<CompoundStmt>(OuterForStmt->getBody())->body_front();
 
   if(!isa<AmdahlParallelForStmt>(ImmediateDescendent) && 
      !isa<AmdahlCollapseForStmt>(ImmediateDescendent)) {
@@ -46,40 +46,50 @@ void Sema::HandleAmdahlNesting(
       std::make_pair(".amdahl_id.", KmpInt32Ty),
       std::make_pair(StringRef(), QualType()) // __context with shared vars
     };
-    Stmt* Body = BaseForStmt->getBody();
+    Stmt* Body = OuterForStmt->getBody();
     ActOnCapturedRegionStart(Body->getLocStart(), CompoundScope, CR_Default, Params);
     auto CapturedBodyAction = ActOnCapturedRegionEnd(Body);
-    BaseForStmt->setBody(CapturedBodyAction.get());
+    OuterForStmt->setBody(CapturedBodyAction.get());
     return;
   }
 
-  // Cast the descendent to a ForStmt (FD).
-  auto FD = (ForStmt*)ImmediateDescendent;
-  auto FDCond = FD->getCond();
-  auto FDInit = FD->getInit();
-  auto FDInc = FD->getInc();
+  // Cast the descendent to a ForStmt (InnerFor).
+  auto InnerFor = (ForStmt*)ImmediateDescendent;
+  auto InnerForCond = cast<BinaryOperator>(InnerFor->getCond());
+  auto InnerForInit = InnerFor->getInit();
+  auto InnerForInc = InnerFor->getInc();
 
   // Only allow <, >, <=, >= on Amdahl loops.
-  auto FDBinaryOperator = cast<BinaryOperator>(FDCond);
-  auto FDBinOpKind = FDBinaryOperator->getOpcode();
-  assert((FDBinOpKind == BinaryOperatorKind::BO_LT || 
-          FDBinOpKind == BinaryOperatorKind::BO_GT ||
-          FDBinOpKind == BinaryOperatorKind::BO_LE || 
-          FDBinOpKind == BinaryOperatorKind::BO_GE) &&
+  auto InnerForBinaryOperator = cast<BinaryOperator>(InnerForCond);
+  auto InnerForBinOpKind = InnerForBinaryOperator->getOpcode();
+  assert((InnerForBinOpKind == BinaryOperatorKind::BO_LT || 
+          InnerForBinOpKind == BinaryOperatorKind::BO_GT ||
+          InnerForBinOpKind == BinaryOperatorKind::BO_LE || 
+          InnerForBinOpKind == BinaryOperatorKind::BO_GE) &&
       "The binary operator for an Amdahl pfor or cfor loop must be <, >, <=, >=.");
 
-  if(isa<AmdahlCollapseForStmt>(FD)) {
-    // Fetch the cond var of the BaseForStmt.
-    auto BaseForCond = BaseForStmt->getCond();
-    auto BaseForInit = BaseForStmt->getInit();
-    auto BaseForInc = BaseForStmt->getInc();
+  if(isa<AmdahlCollapseForStmt>(InnerFor)) {
+    // Fetch the cond var of the OuterForStmt.
+    auto OuterForCond = cast<BinaryOperator>(OuterForStmt->getCond());
+    auto OuterForInit = OuterForStmt->getInit();
+    auto OuterForInc = OuterForStmt->getInc();
+
+    auto Scope = nullptr;
+    auto CombinedUpper = BuildBinOp(Scope, OuterForCond->getExprLoc(), 
+                                    BinaryOperatorKind::BO_Mul, InnerForCond->getRHS(), 
+                                    OuterForCond->getRHS()).get();
+    OuterForStmt->setCond(BuildBinOp(Scope, OuterForCond->getExprLoc(),
+                         InnerForCond->getOpcode(), InnerForCond->getLHS(), CombinedUpper).get());
+    OuterForStmt->dump();
 
     // Finished stealing the iteration space, so cut the statement out.
-    BaseForStmt->setBody(FD->getBody());
+    OuterForStmt->setBody(InnerFor->getBody());
   }
-  else if (isa<AmdahlParallelForStmt>(FD)) {
+  else if (isa<AmdahlParallelForStmt>(InnerFor)) {
     // We're going to shape the parallelism, whatever that means.
-    BaseForStmt->setBody(FD->getBody());
+    // For now just disallow.
+    llvm_unreachable("Amdahl Parallel For nesting is disallowed for now.");
+    OuterForStmt->setBody(InnerFor->getBody());
   }
   else {
     llvm_unreachable("expected an Amdahl statement");
