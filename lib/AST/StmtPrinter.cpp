@@ -594,12 +594,32 @@ void StmtPrinter::VisitSEHLeaveStmt(SEHLeaveStmt *Node) {
 
 void StmtPrinter::VisitAmdahlParallelForStmt(AmdahlParallelForStmt *Node) {
   OS << "p";
-  VisitForStmt(Node);
+  auto Child = Node->getChildStmt();
+  if(isa<CapturedStmt>(Child)) {
+    VisitCapturedStmt(cast<CapturedStmt>(Child));
+  }
+  else if (isa<ForStmt>(Child)){
+    VisitForStmt(cast<ForStmt>(Child));
+  }
+  else {
+    llvm_unreachable(
+        "Have encountered an Amdahl node that has an unexpected child type.");
+  }
 }
 
 void StmtPrinter::VisitAmdahlCollapseForStmt(AmdahlCollapseForStmt *Node) {
   OS << "c";
-  VisitForStmt(Node);
+  auto Child = Node->getChildStmt();
+  if(isa<CapturedStmt>(Child)) {
+    VisitCapturedStmt(cast<CapturedStmt>(Child));
+  }
+  else if (isa<ForStmt>(Child)){
+    VisitForStmt(cast<ForStmt>(Child));
+  }
+  else {
+    llvm_unreachable(
+        "Have encountered an Amdahl node that has an unexpected child type.");
+  }
 }
 
 //===----------------------------------------------------------------------===//

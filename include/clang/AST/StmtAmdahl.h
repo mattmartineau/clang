@@ -24,40 +24,69 @@
 
 namespace clang {
 
-class AmdahlParallelForStmt : public ForStmt {
+class AmdahlParallelForStmt : public Stmt {
   friend class ASTStmtReader;
-
+  bool IsAmdahlMaster;
 public:
-  AmdahlParallelForStmt(const ForStmt& ChildForStmt, const ASTContext &C)
-    : ForStmt(ChildForStmt, C, AmdahlParallelForStmtClass) 
+  AmdahlParallelForStmt(Stmt* ChildStmt, bool IsAmdahlMaster)
+    : Stmt(AmdahlParallelForStmtClass) 
   { 
+    this->IsAmdahlMaster = IsAmdahlMaster; 
+    *child_begin() = ChildStmt; 
   }
 
+  bool IsMaster() { return IsAmdahlMaster; } 
+  Stmt* getChildStmt() const { return const_cast<Stmt *>(*child_begin()); }
+
   /// \brief Build an empty for statement.
-  explicit AmdahlParallelForStmt(EmptyShell Empty) : ForStmt(Empty) { }
+  explicit AmdahlParallelForStmt(EmptyShell Empty) 
+    : Stmt(AmdahlParallelForStmtClass, Empty) { }
+
+  SourceLocation getLocStart() const LLVM_READONLY { 
+    return getChildStmt()->getLocStart(); 
+  }
+
+  SourceLocation getLocEnd() const LLVM_READONLY {
+    return getChildStmt()->getLocEnd();
+  }
 
   static bool classof(const Stmt *T) {
     return T->getStmtClass() == AmdahlParallelForStmtClass;
   }
+
+  child_range children();
 };
 
-class AmdahlCollapseForStmt : public ForStmt {
+class AmdahlCollapseForStmt : public Stmt {
   friend class ASTStmtReader;
 
 public:
-  AmdahlCollapseForStmt(const ForStmt& ChildForStmt, const ASTContext &C)
-    : ForStmt(ChildForStmt, C, AmdahlCollapseForStmtClass) 
+  AmdahlCollapseForStmt(Stmt* ChildStmt)
+    : Stmt(AmdahlCollapseForStmtClass) 
   { 
+    *child_begin() = ChildStmt;
   }
 
+  Stmt* getChildStmt() const { return const_cast<Stmt *>(*child_begin()); }
+
   /// \brief Build an empty for statement.
-  explicit AmdahlCollapseForStmt(EmptyShell Empty) : ForStmt(Empty) { }
+  explicit AmdahlCollapseForStmt(EmptyShell Empty) 
+    : Stmt(AmdahlCollapseForStmtClass, Empty) { }
+
+  SourceLocation getLocStart() const LLVM_READONLY { 
+    return getChildStmt()->getLocStart(); 
+  }
+
+  SourceLocation getLocEnd() const LLVM_READONLY {
+    return getChildStmt()->getLocEnd();
+  }
 
   static bool classof(const Stmt *T) {
     return T->getStmtClass() == AmdahlCollapseForStmtClass;
   }
-};
 
+  child_range children();
+};
 }
 
 #endif

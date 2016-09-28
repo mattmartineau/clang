@@ -194,8 +194,8 @@ def MSDependentExistsStmt : Stmt;
 def AsTypeExpr : DStmt<Expr>;
 
 // Amdahl Extensions.
-def AmdahlParallelForStmt : DStmt<ForStmt>;
-def AmdahlCollapseForStmt : DStmt<ForStmt>;
+def AmdahlParallelForStmt : Stmt;
+def AmdahlCollapseForStmt : Stmt;
 
 // OpenMP Directives.
 def OMPExecutableDirective : Stmt<1>;

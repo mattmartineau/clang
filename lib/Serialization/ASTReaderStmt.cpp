@@ -2874,11 +2874,11 @@ void ASTStmtReader::VisitOMPTeamsDistributeDirective(
 //===----------------------------------------------------------------------===//
 
 void ASTStmtReader::VisitAmdahlParallelForStmt(AmdahlParallelForStmt *Node) {
-  VisitForStmt(Node);
+  VisitStmt(Node->getChildStmt());
 }
 
 void ASTStmtReader::VisitAmdahlCollapseForStmt(AmdahlCollapseForStmt *Node) {
-  VisitForStmt(Node);
+  VisitStmt(Node->getChildStmt());
 }
 
 //===----------------------------------------------------------------------===//

@@ -19,80 +19,79 @@
 using namespace clang;
 
 StmtResult Sema::ActOnAmdahlParallelForStmt(
-    ForStmt* OuterForStmt, Scope* CompoundScope)
+    ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestingLevel)
 {
-  HandleAmdahlNesting(OuterForStmt, CompoundScope);
-  return new (Context) AmdahlParallelForStmt(*OuterForStmt, Context);
+  bool IsMaster = (AmdahlNestingLevel == 1);
+  return new (Context) AmdahlParallelForStmt(
+      HandleCurrentNestingLevel(ChildFor, CompoundScope, IsMaster), IsMaster);
 }
 
 StmtResult Sema::ActOnAmdahlCollapseForStmt(
-    ForStmt* OuterForStmt, Scope* CompoundScope)
+    ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestingLevel)
 {
-  HandleAmdahlNesting(OuterForStmt, CompoundScope);
-  return new (Context) AmdahlCollapseForStmt(*OuterForStmt, Context);
+  return new (Context) AmdahlCollapseForStmt(
+      HandleCurrentNestingLevel(ChildFor, CompoundScope, AmdahlNestingLevel));
 }
 
-void Sema::HandleAmdahlNesting(
-    ForStmt* OuterForStmt, Scope* CompoundScope)
+Stmt* Sema::HandleCurrentNestingLevel(
+    ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster)
 {
-  // Check for closely nested Amdahl loop.
-  auto ImmediateDescendent = cast<CompoundStmt>(OuterForStmt->getBody())->body_front();
+  auto ChildForCond = cast<BinaryOperator>(ChildFor->getCond());
+  auto ChildForInit = ChildFor->getInit();
+  auto ChildForInc = ChildFor->getInc();
 
-  if(!isa<AmdahlParallelForStmt>(ImmediateDescendent) && 
-     !isa<AmdahlCollapseForStmt>(ImmediateDescendent)) {
-    // The immediate descendent is some serial operation, capture the body.
+  // Only allow <, >, <=, >= on Amdahl loops.
+  auto ChildForBinaryOperator = cast<BinaryOperator>(ChildForCond);
+  auto ChildForBinOpKind = ChildForBinaryOperator->getOpcode();
+  assert((ChildForBinOpKind == BinaryOperatorKind::BO_LT || 
+        ChildForBinOpKind == BinaryOperatorKind::BO_GT ||
+        ChildForBinOpKind == BinaryOperatorKind::BO_LE || 
+        ChildForBinOpKind == BinaryOperatorKind::BO_GE) &&
+      "The binary operator for an Amdahl pfor or cfor loop must be <, >, <=, >=.");
+
+  // We are the master Amdahl Parallel loop so capture here.
+  if(IsMaster) {
+    assert((isa<AmdahlParallelForStmt>(ChildFor)) &&
+        "Can only nest Amdahl loops within an Amdahl Parallel loop (pfor).");
+
     QualType KmpInt32Ty = Context.getIntTypeForBitwidth(32, 1);
     Sema::CapturedParamNameType Params[] = {
       std::make_pair(".amdahl_id.", KmpInt32Ty),
       std::make_pair(StringRef(), QualType()) // __context with shared vars
     };
-    Stmt* Body = OuterForStmt->getBody();
-    ActOnCapturedRegionStart(Body->getLocStart(), CompoundScope, CR_Default, Params);
-    auto CapturedBodyAction = ActOnCapturedRegionEnd(Body);
-    OuterForStmt->setBody(CapturedBodyAction.get());
-    return;
+    ActOnCapturedRegionStart(ChildFor->getLocStart(), CompoundScope, CR_Default, Params);
+    return ActOnCapturedRegionEnd(ChildFor).get();
   }
 
-  // Cast the descendent to a ForStmt (InnerFor).
-  auto InnerFor = (ForStmt*)ImmediateDescendent;
-  auto InnerForCond = cast<BinaryOperator>(InnerFor->getCond());
-  auto InnerForInit = InnerFor->getInit();
-  auto InnerForInc = InnerFor->getInc();
+  /// Here we will analyse the actual child For...
 
-  // Only allow <, >, <=, >= on Amdahl loops.
-  auto InnerForBinaryOperator = cast<BinaryOperator>(InnerForCond);
-  auto InnerForBinOpKind = InnerForBinaryOperator->getOpcode();
-  assert((InnerForBinOpKind == BinaryOperatorKind::BO_LT || 
-          InnerForBinOpKind == BinaryOperatorKind::BO_GT ||
-          InnerForBinOpKind == BinaryOperatorKind::BO_LE || 
-          InnerForBinOpKind == BinaryOperatorKind::BO_GE) &&
-      "The binary operator for an Amdahl pfor or cfor loop must be <, >, <=, >=.");
-
-  if(isa<AmdahlCollapseForStmt>(InnerFor)) {
-    // Fetch the cond var of the OuterForStmt.
-    auto OuterForCond = cast<BinaryOperator>(OuterForStmt->getCond());
-    auto OuterForInit = OuterForStmt->getInit();
-    auto OuterForInc = OuterForStmt->getInc();
+#if 0
+  if(isa<AmdahlCollapseForStmt>(ChildFor)) {
+    // Fetch the cond var of the ChildFor.
+    auto OuterForCond = cast<BinaryOperator>(ChildFor->getCond());
+    auto OuterForInit = ChildFor->getInit();
+    auto OuterForInc = ChildFor->getInc();
 
     auto Scope = nullptr;
     auto CombinedUpper = BuildBinOp(Scope, OuterForCond->getExprLoc(), 
-                                    BinaryOperatorKind::BO_Mul, InnerForCond->getRHS(), 
-                                    OuterForCond->getRHS()).get();
-    OuterForStmt->setCond(BuildBinOp(Scope, OuterForCond->getExprLoc(),
-                         InnerForCond->getOpcode(), InnerForCond->getLHS(), CombinedUpper).get());
-    OuterForStmt->dump();
+        BinaryOperatorKind::BO_Mul, ChildForCond->getRHS(), 
+        OuterForCond->getRHS()).get();
+    ChildFor->setCond(BuildBinOp(Scope, OuterForCond->getExprLoc(),
+          ChildForCond->getOpcode(), ChildForCond->getLHS(), CombinedUpper).get());
+    ChildFor->dump();
 
     // Finished stealing the iteration space, so cut the statement out.
-    OuterForStmt->setBody(InnerFor->getBody());
+    ChildFor->setBody(ChildFor->getBody());
   }
-  else if (isa<AmdahlParallelForStmt>(InnerFor)) {
+  else if (isa<AmdahlParallelForStmt>(ChildFor)) {
     // We're going to shape the parallelism, whatever that means.
     // For now just disallow.
     llvm_unreachable("Amdahl Parallel For nesting is disallowed for now.");
-    OuterForStmt->setBody(InnerFor->getBody());
+    ChildFor->setBody(ChildFor->getBody());
   }
   else {
     llvm_unreachable("expected an Amdahl statement");
   }
+#endif // if 0
 }
 

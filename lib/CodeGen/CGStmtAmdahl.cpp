@@ -41,7 +41,7 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
 
   S.dump();
 
-  auto Body = S.getBody();
+  auto Body = S.getChildStmt();
   Body->dump();
 
   EmitForStmt(cast<ForStmt>(S));

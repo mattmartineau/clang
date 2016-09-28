@@ -8620,13 +8620,29 @@ TreeTransform<Derived>::TransformOMPArraySectionExpr(OMPArraySectionExpr *E) {
 template<typename Derived>
 StmtResult
 TreeTransform<Derived>::TransformAmdahlParallelForStmt(AmdahlParallelForStmt *S) {
-  return TransformForStmt(S);
+  if(isa<CapturedStmt>(S)) {
+    return TransformCapturedStmt(cast<CapturedStmt>(S));
+  }
+  else if (isa<ForStmt>(S)){
+    return TransformForStmt(cast<ForStmt>(S));
+  }
+
+  llvm_unreachable(
+      "Have encountered an Amdahl node that has an unexpected child type.");
 }
 
 template<typename Derived>
 StmtResult
 TreeTransform<Derived>::TransformAmdahlCollapseForStmt(AmdahlCollapseForStmt *S) {
-  return TransformForStmt(S);
+  if(isa<CapturedStmt>(S)) {
+    return TransformCapturedStmt(cast<CapturedStmt>(S));
+  }
+  else if (isa<ForStmt>(S)){
+    return TransformForStmt(cast<ForStmt>(S));
+  }
+
+  llvm_unreachable(
+      "Have encountered an Amdahl node that has an unexpected child type.");
 }
 
 template<typename Derived>

@@ -2523,11 +2523,11 @@ void ASTStmtWriter::VisitOMPTeamsDistributeDirective(
 //===----------------------------------------------------------------------===//
 
 void ASTStmtWriter::VisitAmdahlParallelForStmt(AmdahlParallelForStmt *Node) {
-  VisitForStmt(Node);
+  VisitStmt(Node->getChildStmt());
 }
 
 void ASTStmtWriter::VisitAmdahlCollapseForStmt(AmdahlCollapseForStmt *Node) {
-  VisitForStmt(Node);
+  VisitStmt(Node->getChildStmt());
 }
 
 //===----------------------------------------------------------------------===//

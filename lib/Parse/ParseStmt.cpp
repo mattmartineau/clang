@@ -378,18 +378,30 @@ Retry:
 
   case tok::kw_pfor:
     {
+      static int AmdahlNestLevel = 0;
+      ++AmdahlNestLevel;
+
       auto ForStmtAction = ParseForStatement(TrailingElseLoc);
       Sema::CompoundScopeRAII CompoundScope(Actions);
-      return Actions.ActOnAmdahlParallelForStmt(
-          cast<ForStmt>(ForStmtAction.get()), getCurScope());
+      auto Res = Actions.ActOnAmdahlParallelForStmt(
+          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel);
+
+      --AmdahlNestLevel;
+      return Res;
     }
 
   case tok::kw_cfor:
     {
+      static int AmdahlNestLevel = 0;
+      ++AmdahlNestLevel;
+
       auto ForStmtAction = ParseForStatement(TrailingElseLoc);
       Sema::CompoundScopeRAII CompoundScope(Actions);
-      return Actions.ActOnAmdahlCollapseForStmt(
-          cast<ForStmt>(ForStmtAction.get()), getCurScope());
+      auto Res = Actions.ActOnAmdahlCollapseForStmt(
+          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel);
+
+      --AmdahlNestLevel;
+      return Res;
     }
   }
 
