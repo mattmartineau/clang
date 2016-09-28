@@ -8592,9 +8592,9 @@ public:
   // Amdahl statements.
   //
   StmtResult ActOnAmdahlParallelForStmt(
-      ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestLevel);
+      ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster);
   StmtResult ActOnAmdahlCollapseForStmt(
-      ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestingLevel);
+      ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster);
   Stmt* HandleCurrentNestingLevel(
       ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster);
 

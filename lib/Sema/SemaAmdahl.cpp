@@ -19,23 +19,23 @@
 using namespace clang;
 
 StmtResult Sema::ActOnAmdahlParallelForStmt(
-    ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestingLevel)
+    ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster)
 {
-  bool IsMaster = (AmdahlNestingLevel == 1);
   return new (Context) AmdahlParallelForStmt(
       HandleCurrentNestingLevel(ChildFor, CompoundScope, IsMaster), IsMaster);
 }
 
 StmtResult Sema::ActOnAmdahlCollapseForStmt(
-    ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestingLevel)
+    ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster)
 {
   return new (Context) AmdahlCollapseForStmt(
-      HandleCurrentNestingLevel(ChildFor, CompoundScope, AmdahlNestingLevel));
+      HandleCurrentNestingLevel(ChildFor, CompoundScope, IsMaster));
 }
 
 Stmt* Sema::HandleCurrentNestingLevel(
     ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster)
 {
+#if 0
   auto ChildForCond = cast<BinaryOperator>(ChildFor->getCond());
   auto ChildForInit = ChildFor->getInit();
   auto ChildForInc = ChildFor->getInc();
@@ -62,6 +62,9 @@ Stmt* Sema::HandleCurrentNestingLevel(
     ActOnCapturedRegionStart(ChildFor->getLocStart(), CompoundScope, CR_Default, Params);
     return ActOnCapturedRegionEnd(ChildFor).get();
   }
+#endif // if 0
+
+  return ChildFor;
 
   /// Here we will analyse the actual child For...
 

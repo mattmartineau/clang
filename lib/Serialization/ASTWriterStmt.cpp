@@ -2523,11 +2523,23 @@ void ASTStmtWriter::VisitOMPTeamsDistributeDirective(
 //===----------------------------------------------------------------------===//
 
 void ASTStmtWriter::VisitAmdahlParallelForStmt(AmdahlParallelForStmt *Node) {
-  VisitStmt(Node->getChildStmt());
+  auto Child = Node->getChildStmt();
+  if (isa<CapturedStmt>(Child))
+    VisitCapturedStmt(cast<CapturedStmt>(Child));
+  else if (isa<ForStmt>(Child))
+    VisitForStmt(cast<ForStmt>(Child));
+  else
+    llvm_unreachable("Unexpected child node for AmdahlParallelForStmt");
 }
 
 void ASTStmtWriter::VisitAmdahlCollapseForStmt(AmdahlCollapseForStmt *Node) {
-  VisitStmt(Node->getChildStmt());
+  auto Child = Node->getChildStmt();
+  if (isa<CapturedStmt>(Child))
+    VisitCapturedStmt(cast<CapturedStmt>(Child));
+  else if (isa<ForStmt>(Child))
+    VisitForStmt(cast<ForStmt>(Child));
+  else
+    llvm_unreachable("Unexpected child node for AmdahlCollapseForStmt");
 }
 
 //===----------------------------------------------------------------------===//

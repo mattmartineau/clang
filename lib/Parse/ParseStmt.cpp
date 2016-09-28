@@ -384,7 +384,7 @@ Retry:
       auto ForStmtAction = ParseForStatement(TrailingElseLoc);
       Sema::CompoundScopeRAII CompoundScope(Actions);
       auto Res = Actions.ActOnAmdahlParallelForStmt(
-          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel);
+          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel == 1);
 
       --AmdahlNestLevel;
       return Res;
@@ -398,7 +398,7 @@ Retry:
       auto ForStmtAction = ParseForStatement(TrailingElseLoc);
       Sema::CompoundScopeRAII CompoundScope(Actions);
       auto Res = Actions.ActOnAmdahlCollapseForStmt(
-          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel);
+          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel == 1);
 
       --AmdahlNestLevel;
       return Res;
@@ -1829,20 +1829,6 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
 
   if (ForRange)
     return Actions.FinishCXXForRangeStmt(ForRangeStmt.get(), Body.get());
-
-#if 0
-  // Check if we have been passed one of the extended Amdahl for statements.
-  if(getLangOpts().Amdahl) {
-    if(AmdahlForToken == AmdahlForKind::AmdahlParallelFor) {
-      return Actions.ActOnAmdahlParallelForStmt(ForLoc, T.getOpenLocation(), 
-          FirstPart.get(), SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
-    }
-    else if(AmdahlForToken == AmdahlForKind::AmdahlCollapseFor) {
-      return Actions.ActOnAmdahlCollapseForStmt(ForLoc, T.getOpenLocation(), 
-          FirstPart.get(), SecondPart, ThirdPart, T.getCloseLocation(), Body.get());
-    }
-  }
-#endif // if 0
 
   return Actions.ActOnForStmt(ForLoc, T.getOpenLocation(), FirstPart.get(),
       SecondPart, ThirdPart, T.getCloseLocation(), Body.get());

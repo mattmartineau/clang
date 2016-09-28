@@ -41,10 +41,12 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
 
   S.dump();
 
-  auto Body = S.getChildStmt();
-  Body->dump();
+  auto Body = *S.getChildStmt();
+  Body.dump();
 
-  EmitForStmt(cast<ForStmt>(S));
+  if(isa<ForStmt>(Body)) {
+    EmitForStmt(cast<ForStmt>(Body));
+  }
 
   auto AmdahlCollapseForEndBlock = createBasicBlock("amdahl.pfor.end");
   EmitBlock(AmdahlCollapseForEndBlock);
@@ -66,7 +68,7 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
   ASTContext &Ctx = CGM.getContext();
   FunctionArgList Args;
   Args.append(CD->param_begin(),
-              std::next(CD->param_begin(), CD->getContextParamPosition()));
+      std::next(CD->param_begin(), CD->getContextParamPosition()));
   auto I = S.captures().begin();
   for (auto *FD : RD->fields()) {
     QualType ArgType = FD->getType();
@@ -94,7 +96,7 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
     if (ArgType->isVariablyModifiedType())
       ArgType = getContext().getVariableArrayDecayedType(ArgType);
     Args.push_back(ImplicitParamDecl::Create(getContext(), nullptr,
-                                             FD->getLocation(), II, ArgType));
+          FD->getLocation(), II, ArgType));
     ++I;
   }
   Args.append(
@@ -104,7 +106,7 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
   // Create the function declaration.
   FunctionType::ExtInfo ExtInfo;
   const CGFunctionInfo &FuncInfo =
-      CGM.getTypes().arrangeBuiltinFunctionDeclaration(Ctx.VoidTy, Args);
+    CGM.getTypes().arrangeBuiltinFunctionDeclaration(Ctx.VoidTy, Args);
   llvm::FunctionType *FuncLLVMTy = CGM.getTypes().GetFunctionType(FuncInfo);
 
   llvm::Function *F = llvm::Function::Create(
@@ -116,7 +118,7 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
 
   // Generate the function.
   StartFunction(CD, Ctx.VoidTy, F, FuncInfo, Args, CD->getLocation(),
-                CD->getBody()->getLocStart());
+      CD->getBody()->getLocStart());
   unsigned Cnt = CD->getContextParamPosition();
   I = S.captures().begin();
   for (auto *FD : RD->fields()) {
@@ -128,9 +130,9 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
       // If the variable is a reference we need to materialize it here.
       if (CurVD->getType()->isReferenceType()) {
         Address RefAddr = CreateMemTemp(CurVD->getType(), getPointerAlign(),
-                                        ".materialized_ref");
+            ".materialized_ref");
         EmitStoreOfScalar(LocalAddr.getPointer(), RefAddr, /*Volatile=*/false,
-                          CurVD->getType());
+            CurVD->getType());
         LocalAddr = RefAddr;
       }
       setAddrOfLocalVar(CurVD, LocalAddr);
@@ -140,15 +142,15 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
     }
 
     LValue ArgLVal =
-        MakeAddrLValue(GetAddrOfLocalVar(Args[Cnt]), Args[Cnt]->getType(),
-                       AlignmentSource::Decl);
+      MakeAddrLValue(GetAddrOfLocalVar(Args[Cnt]), Args[Cnt]->getType(),
+          AlignmentSource::Decl);
     if (FD->hasCapturedVLAType()) {
       LValue CastedArgLVal =
-          MakeAddrLValue(castValueFromUintptr(*this, FD->getType(),
-                                              Args[Cnt]->getName(), ArgLVal),
-                         FD->getType(), AlignmentSource::Decl);
+        MakeAddrLValue(castValueFromUintptr(*this, FD->getType(),
+              Args[Cnt]->getName(), ArgLVal),
+            FD->getType(), AlignmentSource::Decl);
       auto *ExprArg =
-          EmitLoadOfLValue(CastedArgLVal, SourceLocation()).getScalarVal();
+        EmitLoadOfLValue(CastedArgLVal, SourceLocation()).getScalarVal();
       auto VAT = FD->getCapturedVLAType();
       VLASizeMap[VAT->getSizeExpr()] = ExprArg;
     } else if (I->capturesVariable()) {
@@ -163,17 +165,17 @@ void CodeGenFunction::EmitAmdahlParallelForStmt(const AmdahlParallelForStmt &S,
           Var, Address(ArgAddr.getPointer(), getContext().getDeclAlign(Var)));
     } else if (I->capturesVariableByCopy()) {
       assert(!FD->getType()->isAnyPointerType() &&
-             "Not expecting a captured pointer.");
+          "Not expecting a captured pointer.");
       auto *Var = I->getCapturedVar();
       QualType VarTy = Var->getType();
       setAddrOfLocalVar(Var, castValueFromUintptr(*this, FD->getType(),
-                                                  Args[Cnt]->getName(), ArgLVal,
-                                                  VarTy->isReferenceType()));
+            Args[Cnt]->getName(), ArgLVal,
+            VarTy->isReferenceType()));
     } else {
       // If 'this' is captured, load it into CXXThisValue.
       assert(I->capturesThis());
       CXXThisValue =
-          EmitLoadOfLValue(ArgLVal, Args[Cnt]->getLocation()).getScalarVal();
+        EmitLoadOfLValue(ArgLVal, Args[Cnt]->getLocation()).getScalarVal();
     }
     ++Cnt;
     ++I;
@@ -198,7 +200,7 @@ RTLFn = CGM.CreateRuntimeFunction(FnTy, "__kmpc_fork_call");
 #endif // if 0
 
 void CodeGenFunction::EmitAmdahlCollapseForStmt(const AmdahlCollapseForStmt &S,
-                                  ArrayRef<const Attr *> ForAttrs) {
+    ArrayRef<const Attr *> ForAttrs) {
 
   auto AmdahlPForBeginBlock = createBasicBlock("amdahl.cfor.begin");
   EmitBlock(AmdahlPForBeginBlock);

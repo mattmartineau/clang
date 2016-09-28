@@ -27,16 +27,25 @@ namespace clang {
 class AmdahlParallelForStmt : public Stmt {
   friend class ASTStmtReader;
   bool IsAmdahlMaster;
+
+  Stmt* ChildStmt;
 public:
   AmdahlParallelForStmt(Stmt* ChildStmt, bool IsAmdahlMaster)
     : Stmt(AmdahlParallelForStmtClass) 
   { 
     this->IsAmdahlMaster = IsAmdahlMaster; 
-    *child_begin() = ChildStmt; 
+    this->ChildStmt = ChildStmt; 
   }
 
   bool IsMaster() { return IsAmdahlMaster; } 
-  Stmt* getChildStmt() const { return const_cast<Stmt *>(*child_begin()); }
+  Stmt* getChildStmt() const { return ChildStmt; }
+  ForStmt* getAssociatedForStmt() const {
+    auto Child = getChildStmt();
+    if(isa<CapturedStmt>(Child)) {
+      Child = cast<CapturedStmt>(Child)->getCapturedStmt();
+    }
+    return cast<ForStmt>(Child);
+  }
 
   /// \brief Build an empty for statement.
   explicit AmdahlParallelForStmt(EmptyShell Empty) 
@@ -54,20 +63,30 @@ public:
     return T->getStmtClass() == AmdahlParallelForStmtClass;
   }
 
-  child_range children();
+  child_range children() {
+    return child_range(child_iterator(), child_iterator());
+  }
 };
 
 class AmdahlCollapseForStmt : public Stmt {
   friend class ASTStmtReader;
 
+  Stmt* ChildStmt;
 public:
   AmdahlCollapseForStmt(Stmt* ChildStmt)
     : Stmt(AmdahlCollapseForStmtClass) 
   { 
-    *child_begin() = ChildStmt;
+    this->ChildStmt = ChildStmt; 
   }
 
-  Stmt* getChildStmt() const { return const_cast<Stmt *>(*child_begin()); }
+  Stmt* getChildStmt() const { return ChildStmt; }
+  ForStmt* getAssociatedForStmt() const {
+    auto Child = getChildStmt();
+    if(isa<CapturedStmt>(Child)) {
+      Child = cast<CapturedStmt>(Child)->getCapturedStmt();
+    }
+    return cast<ForStmt>(Child);
+  }
 
   /// \brief Build an empty for statement.
   explicit AmdahlCollapseForStmt(EmptyShell Empty) 
@@ -85,7 +104,9 @@ public:
     return T->getStmtClass() == AmdahlCollapseForStmtClass;
   }
 
-  child_range children();
+  child_range children() {
+    return child_range(child_iterator(), child_iterator());
+  }
 };
 }
 
