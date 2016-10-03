@@ -8592,11 +8592,11 @@ public:
   // Amdahl statements.
   //
   StmtResult ActOnAmdahlParallelForStmt(
-      ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster);
+      ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestLevel);
   StmtResult ActOnAmdahlCollapseForStmt(
-      ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster);
+      ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestLevel);
   Stmt* HandleCurrentNestingLevel(
-      ForStmt* ChildFor, Scope* CompoundScope, bool IsMaster);
+      ForStmt* ChildFor, Scope* CompoundScope, const int AmdahlNestLevel);
 
   /// \brief The kind of conversion being performed.
   enum CheckedConversionKind {

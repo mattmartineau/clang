@@ -963,6 +963,7 @@ StmtResult Parser::ParseOpenMPDeclarativeOrExecutableDirective(
       AssociatedStmt = ParseStatement();
       Actions.ActOnFinishOfCompoundStmt();
       AssociatedStmt = Actions.ActOnOpenMPRegionEnd(AssociatedStmt, Clauses);
+      AssociatedStmt.get()->dump();
     }
     Directive = Actions.ActOnOpenMPExecutableDirective(
         DKind, DirName, CancelRegion, Clauses, AssociatedStmt.get(), Loc,

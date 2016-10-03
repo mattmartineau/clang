@@ -377,31 +377,46 @@ Retry:
     return StmtEmpty();
 
   case tok::kw_pfor:
-    {
-      static int AmdahlNestLevel = 0;
-      ++AmdahlNestLevel;
-
-      auto ForStmtAction = ParseForStatement(TrailingElseLoc);
-      Sema::CompoundScopeRAII CompoundScope(Actions);
-      auto Res = Actions.ActOnAmdahlParallelForStmt(
-          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel == 1);
-
-      --AmdahlNestLevel;
-      return Res;
-    }
-
   case tok::kw_cfor:
     {
+      // Store token, as it will get overwritten by ParseForStatement.
+      Token AmdahlTok = Tok;
+
+      // Store a nest level for the nested loops.
       static int AmdahlNestLevel = 0;
       ++AmdahlNestLevel;
 
-      auto ForStmtAction = ParseForStatement(TrailingElseLoc);
-      Sema::CompoundScopeRAII CompoundScope(Actions);
-      auto Res = Actions.ActOnAmdahlCollapseForStmt(
-          cast<ForStmt>(ForStmtAction.get()), getCurScope(), AmdahlNestLevel == 1);
+      if(AmdahlNestLevel > 1) {
+        auto ForStmtAction = ParseForStatement(TrailingElseLoc);
+        if(AmdahlTok.is(tok::kw_pfor)) {
+          // TODO: REMOVE SCOPE
+          return Actions.ActOnAmdahlParallelForStmt(
+              cast<ForStmt>(ForStmtAction.get()), Scope, AmdahlNestLevel);
+        }
+        else {
+          assert(AmdahlNestLevel != 0 &&
+              "Can only nest Amdahl loops within an Amdahl Parallel loop (pfor).");
+          // TODO: REMOVE SCOPE
+          return Actions.ActOnAmdahlCollapseForStmt(
+              cast<ForStmt>(ForStmtAction.get()), Scope, AmdahlNestLevel);
+        }
+      }
+      else {
+        QualType KmpInt32Ty = Context.getIntTypeForBitwidth(32, 1);
+        Sema::CapturedParamNameType Params[] = {
+          std::make_pair(".amdahl_id.", KmpInt32Ty),
+          std::make_pair(StringRef(), QualType()) // __context with shared vars
+        };
+        Scope* Scope = getCurScope();
+        Sema::CompoundScopeRAII CompoundScope(Actions);
+        ActOnCapturedRegionStart(ChildFor->getLocStart(), CompoundScope, CR_Default, Params);
+        auto ForStmtAction = ParseForStatement(TrailingElseLoc);
+        return new (Context) AmdahlParallelForStmt(
+            ActOnCapturedRegionEnd(ChildFor).get(), AmdahlNestLevel);
+      }
 
       --AmdahlNestLevel;
-      return Res;
+
     }
   }
 

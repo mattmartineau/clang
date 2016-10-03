@@ -1804,6 +1804,7 @@ StmtResult Sema::ActOnOpenMPRegionEnd(StmtResult S,
         (getLangOpts().OpenMPUseTLS &&
          getASTContext().getTargetInfo().isTLSSupported() &&
          Clause->getClauseKind() == OMPC_copyin)) {
+      // NOTE: NEVER ENTERED!!
       DSAStack->setForceVarCapturing(Clause->getClauseKind() == OMPC_copyin);
       // Mark all variables in private list clauses as used in inner region.
       for (auto *VarRef : Clause->children()) {
@@ -1820,11 +1821,13 @@ StmtResult Sema::ActOnOpenMPRegionEnd(StmtResult S,
         if (auto *DS = cast_or_null<DeclStmt>(C->getPreInitStmt())) {
           for (auto *D : DS->decls())
             MarkVariableReferenced(D->getLocation(), cast<VarDecl>(D));
+          // NOTE: THIS DIDN'T INJECT VARIABLES
         }
       }
       if (auto *C = OMPClauseWithPostUpdate::get(Clause)) {
         if (auto *E = C->getPostUpdateExpr())
           MarkDeclarationsReferencedInExpr(E);
+        // NOTE: THIS DIDN'T INJECT VARIABLES
       }
     }
     if (Clause->getClauseKind() == OMPC_schedule)
@@ -3795,6 +3798,7 @@ StmtResult Sema::ActOnOpenMPExecutableDirective(
 
   if (ErrorFound)
     return StmtError();
+  Res.get()->dump();
   return Res;
 }
 

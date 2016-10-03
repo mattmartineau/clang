@@ -27,32 +27,26 @@ namespace clang {
 class AmdahlParallelForStmt : public Stmt {
   friend class ASTStmtReader;
   bool IsAmdahlMaster;
+  int AmdahlNestLevel;
 
   Stmt* ChildStmt;
 public:
-  AmdahlParallelForStmt(Stmt* ChildStmt, bool IsAmdahlMaster)
-    : Stmt(AmdahlParallelForStmtClass) 
-  { 
-    this->IsAmdahlMaster = IsAmdahlMaster; 
+  AmdahlParallelForStmt(Stmt* ChildStmt, const int AmdahlNestLevel)
+    : Stmt(AmdahlParallelForStmtClass) { 
+    this->IsAmdahlMaster = (AmdahlNestLevel == 0); 
     this->ChildStmt = ChildStmt; 
+    this->AmdahlNestLevel = AmdahlNestLevel;
   }
 
   bool IsMaster() { return IsAmdahlMaster; } 
   Stmt* getChildStmt() const { return ChildStmt; }
-  ForStmt* getAssociatedForStmt() const {
-    auto Child = getChildStmt();
-    if(isa<CapturedStmt>(Child)) {
-      Child = cast<CapturedStmt>(Child)->getCapturedStmt();
-    }
-    return cast<ForStmt>(Child);
-  }
 
   /// \brief Build an empty for statement.
   explicit AmdahlParallelForStmt(EmptyShell Empty) 
     : Stmt(AmdahlParallelForStmtClass, Empty) { }
 
   SourceLocation getLocStart() const LLVM_READONLY { 
-    return getChildStmt()->getLocStart(); 
+    return getChildStmt()->getLocStart();
   }
 
   SourceLocation getLocEnd() const LLVM_READONLY {
@@ -64,7 +58,7 @@ public:
   }
 
   child_range children() {
-    return child_range(child_iterator(), child_iterator());
+    return child_range(&ChildStmt, &ChildStmt + 1);
   }
 };
 
@@ -72,28 +66,23 @@ class AmdahlCollapseForStmt : public Stmt {
   friend class ASTStmtReader;
 
   Stmt* ChildStmt;
+  int AmdahlNestLevel;
 public:
-  AmdahlCollapseForStmt(Stmt* ChildStmt)
-    : Stmt(AmdahlCollapseForStmtClass) 
-  { 
+  AmdahlCollapseForStmt(Stmt* ChildStmt, const int AmdahlNestLevel)
+    : Stmt(AmdahlCollapseForStmtClass) { 
     this->ChildStmt = ChildStmt; 
+    this->AmdahlNestLevel = AmdahlNestLevel;
   }
 
+
   Stmt* getChildStmt() const { return ChildStmt; }
-  ForStmt* getAssociatedForStmt() const {
-    auto Child = getChildStmt();
-    if(isa<CapturedStmt>(Child)) {
-      Child = cast<CapturedStmt>(Child)->getCapturedStmt();
-    }
-    return cast<ForStmt>(Child);
-  }
 
   /// \brief Build an empty for statement.
   explicit AmdahlCollapseForStmt(EmptyShell Empty) 
     : Stmt(AmdahlCollapseForStmtClass, Empty) { }
 
   SourceLocation getLocStart() const LLVM_READONLY { 
-    return getChildStmt()->getLocStart(); 
+    return getChildStmt()->getLocStart();
   }
 
   SourceLocation getLocEnd() const LLVM_READONLY {
@@ -105,7 +94,7 @@ public:
   }
 
   child_range children() {
-    return child_range(child_iterator(), child_iterator());
+    return child_range(&ChildStmt, &ChildStmt + 1);
   }
 };
 }
